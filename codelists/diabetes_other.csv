@@ -1,0 +1,82 @@
+﻿code,code_description,terminology,active_in_algorithm,diabetes_type,diabetes_type_level2,diabetes_type_level3
+292571000000107,Cystic fibrosis related diabetes mellitus,SNOMED,1,Other,Genetic,Cystic Fibrosis
+286451000000100,Cystic fibrosis related diabetes mellitus (disorder),SNOMED,1,Other,Genetic,Cystic Fibrosis
+426705001,Diabetes mellitus co-occurrent and due to cystic fibrosis (disorder),SNOMED,1,Other,Genetic,Cystic Fibrosis
+427089005,Diabetes mellitus due to cystic fibrosis (disorder),SNOMED,1,Other,Genetic,Cystic Fibrosis
+609562003,Maturity onset diabetes of the young type 1 (disorder),SNOMED,1,Other,Genetic,MODY
+237604008,Maturity onset diabetes of the young type 2 (disorder),SNOMED,1,Other,Genetic,MODY
+78471000000108,Maturity onset diabetes mellitus in young,SNOMED,1,Other,Genetic,MODY
+28453007,Maturity onset diabetes mellitus in young (disorder),SNOMED,1,Other,Genetic,MODY
+400971001,Maturity onset diabetes mellitus in young (disorder),SNOMED,1,Other,Genetic,MODY
+974141000000109,Maturity onset diabetes of the young type 5,SNOMED,1,Other,Genetic,MODY
+974131000000100,Maturity onset diabetes of the young type 5 (disorder),SNOMED,1,Other,Genetic,MODY
+609561005,Maturity-onset diabetes of the young (disorder),SNOMED,1,Other,Genetic,MODY
+609577006,Maturity-onset diabetes of the young type 10 (disorder),SNOMED,1,Other,Genetic,MODY
+609578001,Maturity-onset diabetes of the young type 11 (disorder),SNOMED,1,Other,Genetic,MODY
+609570008,Maturity-onset diabetes of the young type 3 (disorder),SNOMED,1,Other,Genetic,MODY
+609571007,Maturity-onset diabetes of the young type 4 (disorder),SNOMED,1,Other,Genetic,MODY
+609572000,Maturity-onset diabetes of the young type 5 (disorder),SNOMED,1,Other,Genetic,MODY
+609573005,Maturity-onset diabetes of the young type 6 (disorder),SNOMED,1,Other,Genetic,MODY
+609574004,Maturity-onset diabetes of the young type 7 (disorder),SNOMED,1,Other,Genetic,MODY
+609575003,Maturity-onset diabetes of the young type 8 (disorder),SNOMED,1,Other,Genetic,MODY
+609576002,Maturity-onset diabetes of the young type 9 (disorder),SNOMED,1,Other,Genetic,MODY
+771521000000101,History of autosomal dominant diabetes mellitus (situation),SNOMED,1,Other,Genetic,MODY
+472972006,History of maturity onset diabetes mellitus in young (situation),SNOMED,1,Other,Genetic,MODY
+609565001,Permanent neonatal diabetes mellitus (disorder),SNOMED,1,Other,Genetic,Neonatal
+724067006,Permanent neonatal diabetes mellitus with cerebellar agenesis syndrome (disorder),SNOMED,1,Other,Genetic,Neonatal
+782825008,Primary microcephaly epilepsy permanent neonatal diabetes syndrome (disorder),SNOMED,1,Other,Genetic,Neonatal
+609568004,Diabetes mellitus due to genetic defect in beta cell function (disorder),SNOMED,1,Other,Genetic,NOS
+609569007,Diabetes mellitus due to genetic defect in insulin action (disorder),SNOMED,1,Other,Genetic,NOS
+91352004,Diabetes mellitus due to structurally abnormal insulin (disorder),SNOMED,1,Other,Genetic,NOS
+5969009,Diabetes mellitus associated with genetic syndrome (disorder),SNOMED,1,Other,Genetic,NOS
+715439000,Familial partial lipodystrophy type 2 (disorder),SNOMED,1,Other,Genetic,Other
+390716007,Diabetes mellitus autosomal dominant type 2 (disorder),SNOMED,1,Other,Genetic,Other
+70694009,Wolfram syndrome (disorder),SNOMED,1,Other,Genetic,Other
+734022008,Wolfram-like syndrome (disorder),SNOMED,1,Other,Genetic,Other
+237610008,Acrorenal field defect ectodermal dysplasia and lipoatrophic diabetes (disorder),SNOMED,1,Other,Genetic,Other
+733072002,Alaninuria microcephaly dwarfism enamel hypoplasia diabetes mellitus syndrome (disorder),SNOMED,1,Other,Genetic,Other
+720519003,Atherosclerosis deafness diabetes epilepsy nephropathy syndrome (disorder),SNOMED,1,Other,Genetic,Other
+284449005,Congenital total lipodystrophy (disorder),SNOMED,1,Other,Genetic,Other
+816067005,Diabetes hypogonadism deafness intellectual disability syndrome (disorder),SNOMED,1,Other,Genetic,Other
+390715006,Diabetes mellitus autosomal dominant (disorder),SNOMED,1,Other,Genetic,Other
+237616002,Hypogonadism diabetes mellitus alopecia mental retardation and electrocardiographic abnormalities (disorder),SNOMED,1,Other,Genetic,Other
+722454003,Intellectual disability craniofacial dysmorphism hypogonadism diabetes mellitus syndrome (disorder),SNOMED,1,Other,Genetic,Other
+782755007,Primary microcephaly mild intellectual disability young-onset diabetes syndrome (disorder),SNOMED,1,Other,Genetic,Other
+724276006,X-linked immune dysregulation polyendocrinopathy enteropathy syndrome (disorder),SNOMED,1,Other,Genetic,Other
+237619009,Diabetes-deafness syndrome maternally transmitted (disorder),SNOMED,1,Other,Genetic ,Other
+721973006,Lipodystrophy intellectual disability deafness syndrome (disorder),SNOMED,1,Other,Genetic ,Other
+237608006,Lipodystrophy partial with Rieger anomaly short stature and insulinopenic diabetes mellitus (disorder),SNOMED,1,Other,Genetic ,Other
+335621000000101,Maternally inherited diabetes mellitus (disorder),SNOMED,1,Other,Genetic ,Other
+237617006,Megaloblastic anemia thiamine-responsive with diabetes mellitus and sensorineural deafness (disorder),SNOMED,1,Other,Genetic ,Other
+722206009,Pancreatic hypoplasia diabetes mellitus congenital heart disease syndrome (disorder),SNOMED,1,Other,Genetic ,Other
+237612000,Photomyoclonus diabetes mellitus deafness nephropathy and cerebral dysfunction (disorder),SNOMED,1,Other,Genetic ,Other
+33559001,Pineal hyperplasia AND diabetes mellitus syndrome (disorder),SNOMED,1,Other,Genetic ,Other
+190447002,Steroid-induced diabetes (disorder),SNOMED,1,Other,Glucocorticoids,
+190416008,Steroid-induced diabetes mellitus without complication (disorder),SNOMED,1,Other,Glucocorticoids,
+127012008,Lipoatrophic diabetes (disorder),SNOMED,1,Other,Lipoatrophy,
+112991000000101,Lipoatrophic diabetes mellitus without complication (disorder),SNOMED,1,Other,Lipoatrophy,
+51002006,Diabetes mellitus associated with pancreatic disease (disorder),SNOMED,1,Other,Pancreatic disease,
+105401000119101,Diabetes mellitus due to pancreatic injury (disorder),SNOMED,1,Other,Pancreatic disease,
+122481000000101,Fibrocalculous pancreatic diabetes,SNOMED,1,Other,Pancreatic disease,
+99261000000102,Fibrocalculous pancreatic diabetes,SNOMED,1,Other,Pancreatic disease,
+2751001,Fibrocalculous pancreatic diabetes (disorder),SNOMED,1,Other,Pancreatic disease,
+408545008,Fibrocalculous pancreatic diabetes (disorder),SNOMED,1,Other,Pancreatic disease,
+413184002,Fibrocalculous pancreatopathy without complication (disorder),SNOMED,1,Other,Pancreatic disease,
+104031000000108,Secondary pancreatic diabetes mellitus,SNOMED,1,Other,Pancreatic disease,
+122411000000108,Secondary pancreatic diabetes mellitus without complication,SNOMED,1,Other,Pancreatic disease,
+122961000000101,Secondary pancreatic diabetes mellitus without complication (disorder),SNOMED,1,Other,Pancreatic disease,
+303059007,Postpancreatectomy hypoinsulinemia (disorder),SNOMED,1,Other,Pancreatic disease,
+771571000000102,History of secondary diabetes mellitus (situation),SNOMED,1,Other,Secondary,
+368601000119102,Hyperosmolar coma due to secondary diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+368711000119106,Mild nonproliferative retinopathy due to secondary diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+368741000119105,Moderate non-proliferative retinopathy due to secondary diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+368721000119104,Non-proliferative retinopathy due to secondary diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+8801005,Secondary diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+237601000,Secondary endocrine diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+445260006,Posttransplant diabetes mellitus (disorder),SNOMED,1,Other,Secondary,
+59079001,Diabetes mellitus associated with hormonal etiology (disorder),SNOMED,1,Other,,
+42954008,Diabetes mellitus associated with receptor abnormality (disorder),SNOMED,1,Other,,
+737212004,Diabetes mellitus caused by chemical (disorder),SNOMED,1,Other,,
+75682002,Diabetes mellitus caused by insulin receptor antibodies (disorder),SNOMED,1,Other,,
+408540003,Diabetes mellitus caused by non-steroid drugs (disorder),SNOMED,1,Other,,
+413183008,Diabetes mellitus caused by non-steroid drugs without complication (disorder),SNOMED,1,Other,,
