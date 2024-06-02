@@ -1,0 +1,18 @@
+﻿code,code_description,terminology,medication_group,in_open_prescribing
+0601012W0,Biphasic insulin aspart,BNF,Insulin,1
+0601012F0,Biphasic insulin lispro,BNF,Insulin,1
+0601012D0,Biphasic isophane insulin,BNF,Insulin,1
+0601011A0,Insulin aspart,BNF,Insulin,1
+0601012Z0,Insulin degludec,BNF,Insulin,1
+0601012X0,Insulin detemir,BNF,Insulin,1
+0601012V0,Insulin glargine,BNF,Insulin,1
+0601012AB,Insulin glargine/lixisenatide,BNF,Insulin,1
+0601011P0,Insulin glulisine,BNF,Insulin,1
+0601011R0,Insulin human,BNF,Insulin,1
+0601011L0,Insulin Lispro,BNF,Insulin,1
+0601012G0,Insulin zinc suspension,BNF,Insulin,1
+0601012S0,Isophane insulin,BNF,Insulin,1
+0601012U0,Protamine zinc insulin,BNF,Insulin,1
+0601011N0,Soluble insulin (Neutral insulin),BNF,Insulin,1
+0601012N0,,BNF,Insulin,0
+0601011Q0,,BNF,Insulin,0
