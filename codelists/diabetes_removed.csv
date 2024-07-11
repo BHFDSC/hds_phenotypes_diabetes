@@ -51,3 +51,24 @@ O249,"Diabetes mellitus in pregnancy, unspecified",ICD10,0,Removed,Gestational,
 414230000,Family/carer referral to diabetes structured education program (procedure),SNOMED,0,Removed,,
 763325000,Insulin resistance (disorder),SNOMED,0,Removed,,
 83728000,Polyglandular autoimmune syndrome type 2 (disorder),SNOMED,0,Removed,,
+134395001,Diabetic retinopathy screening (procedure),SNOMED,0,Removed,Examination/screening - retinal/foot,Procedure Codes
+1066911000000100,Diabetes monitoring short message service text message first invitation (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+1066921000000106,Diabetes monitoring short message service text message second invitation (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+1066931000000108,Diabetes monitoring short message service text message third invitation (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+1083111000000108,Diabetes monitoring invitation email (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+185756006,Diabetes monitoring first letter (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+185757002,Diabetes monitoring second letter (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+185758007,Diabetes monitoring third letter (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+185759004,Diabetes monitoring verbal invite (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+185760009,Diabetes monitoring telephone invite (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+310425007,Diabetes monitoring invitation (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+705072004,Diabetes monitoring invitation by short message service text messaging (procedure),SNOMED,0,Removed,Monitoring,Procedure Codes
+722161008,Diabetic retinal eye exam (procedure),SNOMED,0,Removed,On examination/screening - retinal/foot,Procedure Codes
+1110921000000100,Quality and Outcomes Framework diabetes mellitus quality indicator-related care invitation (procedure),SNOMED,0,Removed,QOF,Procedure Codes
+143401000000102,Quality and Outcomes Framework diabetes mellitus quality indicator-related care invitation using preferred method of communication (procedure),SNOMED,0,Removed,QOF,Procedure Codes
+1108731000000100,Referral to online diabetes structured education programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
+1108741000000109,Referral to Healthy Living for People with Diabetes online self-management programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
+306701000000102,Referral to dose adjustment for normal eating diabetes structured education programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
+306741000000104,Referral to diabetes education and self management for ongoing and newly diagnosed diabetes structured programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
+306771000000105,Referral to expert patient education versus routine treatment diabetes structured education programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
+415270003,Referral to diabetes structured education program (procedure),SNOMED,0,Removed,Referral,Procedure Codes
