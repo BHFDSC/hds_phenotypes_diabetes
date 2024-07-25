@@ -72,3 +72,7 @@ O249,"Diabetes mellitus in pregnancy, unspecified",ICD10,0,Removed,Gestational,
 306741000000104,Referral to diabetes education and self management for ongoing and newly diagnosed diabetes structured programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
 306771000000105,Referral to expert patient education versus routine treatment diabetes structured education programme (procedure),SNOMED,0,Removed,Referral,Procedure Codes
 415270003,Referral to diabetes structured education program (procedure),SNOMED,0,Removed,Referral,Procedure Codes
+408397002,Diabetic foot examination not indicated (situation),SNOMED,0,Removed,Examination/screening - retinal/foot,
+704241002,Fetal hypertrophic cardiomyopathy due to maternal diabetes mellitus (disorder),SNOMED,0,Removed,Due to diabetes,
+123763000,Houssay's syndrome (disorder),SNOMED,0,Removed,,
+715439000,Familial partial lipodystrophy type 2 (disorder),SNOMED,0,Removed,Genetic,Other
