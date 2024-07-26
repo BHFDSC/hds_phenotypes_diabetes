@@ -11,7 +11,7 @@
 60621009,Body mass index (observable entity),SNOMED,bmi_markers
 6497000,Decreased body mass index (finding),SNOMED,bmi_markers
 722595002,Overweight in adulthood with body mass index of 25 or more but less than 30 (finding),SNOMED,bmi_markers
-8.46931E+14,Baseline body mass index (observable entity),SNOMED,bmi_markers
-9.14721E+14,Obese class I (body mass index 30.0 - 34.9) (finding),SNOMED,bmi_markers
-9.14731E+14,Obese class II (body mass index 35.0 - 39.9) (finding),SNOMED,bmi_markers
-9.14741E+14,Obese class III (body mass index equal to or greater than 40.0) (finding),SNOMED,bmi_markers
+846931000000101,Baseline body mass index (observable entity),SNOMED,bmi_markers
+914721000000105,Obese class I (body mass index 30.0 - 34.9) (finding),SNOMED,bmi_markers
+914731000000107,Obese class II (body mass index 35.0 - 39.9) (finding),SNOMED,bmi_markers
+914741000000103,Obese class III (body mass index equal to or greater than 40.0) (finding),SNOMED,bmi_markers
