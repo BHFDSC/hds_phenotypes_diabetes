@@ -1,0 +1,92 @@
+﻿code,code_description,group,terminology
+E66,Obesity,bmi_category_obesity,ICD10
+E660,Obesity due to excess calories,bmi_category_obesity,ICD10
+E661,Drug-induced obesity,bmi_category_obesity,ICD10
+E662,Extreme obesity with alveolar hypoventilation,bmi_category_obesity,ICD10
+E668,Other obesity,bmi_category_obesity,ICD10
+E669,"Obesity, unspecified",bmi_category_obesity,ICD10
+10977641000119108,History of removal of gastric banding device (situation),bmi_category_obesity,SNOMED
+160311006,FH: Obesity,bmi_category_obesity,SNOMED
+16093531000119101,History of adult obesity (situation),bmi_category_obesity,SNOMED
+161453001,H/O: obesity,bmi_category_obesity,SNOMED
+162690006,O/E - obese,bmi_category_obesity,SNOMED
+162864005,Body mass index 30+ - obesity,bmi_category_obesity,SNOMED
+170794003,Initial obesity assessment,bmi_category_obesity,SNOMED
+170795002,Follow-up obesity assessment,bmi_category_obesity,SNOMED
+170797005,Has seen dietitian - obesity,bmi_category_obesity,SNOMED
+170798000,Treatment of obesity changed,bmi_category_obesity,SNOMED
+170799008,Treatment of obesity started,bmi_category_obesity,SNOMED
+170807005,Reason for obesity therapy - occupational,bmi_category_obesity,SNOMED
+173748000,Bypass of stomach by anastomosis of stomach to transposed jejunum,bmi_category_obesity,SNOMED
+173911002,Bypass of jejunum,bmi_category_obesity,SNOMED
+173913004,Bypass of jejunum by anastomosis of jejunum to ileum,bmi_category_obesity,SNOMED
+173914005,Jejunocolostomy (& [Dewind] or [Payne] or [Scott]),bmi_category_obesity,SNOMED
+185741002,Attends obesity monitoring,bmi_category_obesity,SNOMED
+185742009,Refuses obesity monitoring,bmi_category_obesity,SNOMED
+185743004,Obesity monitoring default,bmi_category_obesity,SNOMED
+185744005,Obesity monitoring first letter,bmi_category_obesity,SNOMED
+185745006,Obesity monitoring second letter,bmi_category_obesity,SNOMED
+185746007,Obesity monitoring third letter,bmi_category_obesity,SNOMED
+185747003,Obesity monitoring verbal invite,bmi_category_obesity,SNOMED
+185748008,Obesity monitoring telephone invite,bmi_category_obesity,SNOMED
+185750000,Obesity monitoring check done,bmi_category_obesity,SNOMED
+18652006,Bypass gastroenterostomy,bmi_category_obesity,SNOMED
+190565006,Drug-induced obesity,bmi_category_obesity,SNOMED
+190566007,Extreme obesity with alveolar hypoventilation,bmi_category_obesity,SNOMED
+235408004,Jejunocolostomy,bmi_category_obesity,SNOMED
+238134004,Generalized obesity,bmi_category_obesity,SNOMED
+238136002,Morbid obesity,bmi_category_obesity,SNOMED
+248311001,Centripetal obesity,bmi_category_obesity,SNOMED
+265354006,Partitioning of stomach,bmi_category_obesity,SNOMED
+265365007,Bypass of stomach by anastomosis of stomach to duodenum,bmi_category_obesity,SNOMED
+265380001,Jejunojejunal bypass,bmi_category_obesity,SNOMED
+265331002,Bypass of jejunum by anastomosis of jejunum to colon,bmi_category_obesity,SNOMED
+266724001,Patient advised about weight-reducing diet,bmi_category_obesity,SNOMED
+268522006,Obesity monitoring,bmi_category_obesity,SNOMED
+268551005,Obesity screening,bmi_category_obesity,SNOMED
+268916007,O/E - weight greater than 20% over ideal,bmi_category_obesity,SNOMED
+275919002,Weight loss advised,bmi_category_obesity,SNOMED
+276792008,Pulmonary hypertension with extreme obesity,bmi_category_obesity,SNOMED
+284350006,Dietary advice for diabetes mellitus,bmi_category_obesity,SNOMED
+284352003,Dietary advice for obesity,bmi_category_obesity,SNOMED
+294493008,Lifelong obesity,bmi_category_obesity,SNOMED
+296526005,Adult-onset obesity,bmi_category_obesity,SNOMED
+302872003,Disorder of hyperalimentation,bmi_category_obesity,SNOMED
+307818003,Weight monitoring,bmi_category_obesity,SNOMED
+30803004,"Printen and Mason operation, high gastric bypass",bmi_category_obesity,SNOMED
+329281000119107,History of sleeve gastrectomy,bmi_category_obesity,SNOMED
+363247006,Obesity associated disorder,bmi_category_obesity,SNOMED
+408512008,Body mass index 40+ - severely obese (finding),bmi_category_obesity,SNOMED
+414574004,Laparoscopic adjustable gastric banding (procedure),bmi_category_obesity,SNOMED
+414916001,Obesity (disorder),bmi_category_obesity,SNOMED
+415530009,Simple obesity (disorder),bmi_category_obesity,SNOMED
+424753004,"Dietary management education, guidance, and counseling (procedure)",bmi_category_obesity,SNOMED
+426273008,Partitioning of stomach using band (procedure),bmi_category_obesity,SNOMED
+426559000,Removal of gastric band (procedure),bmi_category_obesity,SNOMED
+426730009,Duodenal switch (procedure),bmi_category_obesity,SNOMED
+427029008,Partitioning of stomach using staples (procedure),bmi_category_obesity,SNOMED
+427074001,Laparoscopic sleeve gastrectomy (procedure),bmi_category_obesity,SNOMED
+427980007,Sleeve gastrectomy with duodenal switch (procedure),bmi_category_obesity,SNOMED
+429538006,History of laparoscopic adjustable gastric banding (situation),bmi_category_obesity,SNOMED
+442261001,Maintenance of gastric band,bmi_category_obesity,SNOMED
+49245001,Bypass gastrojejunostomy,bmi_category_obesity,SNOMED
+63702009,Alstrom syndrome,bmi_category_obesity,SNOMED
+698450007,History of bypass of stomach (situation),bmi_category_obesity,SNOMED
+703316004,Lymphedema associated with obesity (disorder),bmi_category_obesity,SNOMED
+708983005,Laparoscopic bypass of stomach,bmi_category_obesity,SNOMED
+715279006,Telehealth obesity monitoring (regime/therapy),bmi_category_obesity,SNOMED
+726052004,"Obesity, colitis, hypothyroidism, cardiac hypertrophy, developmental delay syndrome (disorder)",bmi_category_obesity,SNOMED
+763085007,Obesity monitoring refused,bmi_category_obesity,SNOMED
+87604009,Sleeve resection of stomach,bmi_category_obesity,SNOMED
+E663,Overweight,bmi_category_overweight,ICD10
+162863004,Body mass index 25-29 - overweight (finding),bmi_category_overweight,SNOMED
+238131007,Overweight (finding),bmi_category_overweight,SNOMED
+275947003,On examination - overweight (finding),bmi_category_overweight,SNOMED
+722595002,Overweight in adulthood with body mass index of 25 or more but less than 30 (finding),bmi_category_overweight,SNOMED
+35425004,Normal body mass index (finding),bmi_category_normal,SNOMED
+412768003,Body mass index 20-24 - normal (finding),bmi_category_normal,SNOMED
+43664005,Normal weight (finding),bmi_category_normal,SNOMED
+R636,Underweight,bmi_category_underweight,ICD10
+162769006,On examination - Underweight (finding),bmi_category_underweight,SNOMED
+248342006,Underweight (finding),bmi_category_underweight,SNOMED
+427093001,Body mass index less than 16.5 (finding),bmi_category_underweight,SNOMED
