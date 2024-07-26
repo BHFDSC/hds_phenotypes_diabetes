@@ -1,8 +1,7 @@
-﻿code,code_description,terminology,group
-1971000237103,Substance concentration of haemoglobin A1c diagnostic reference range in blood (observable entity),SNOMED,hba1c
-6181000237109,Substance concentration of haemoglobin A1c monitoring range in blood (observable entity),SNOMED,hba1c
-999791000000106,Haemoglobin A1c level - International Federation of Clinical Chemistry and Laboratory Medicine standardised (observable entity),SNOMED,hba1c
-1049301000000100,Haemoglobin A1c level (diagnostic reference range) - International Federation of Clinical Chemistry and Laboratory Medicine standardised (observable entity),SNOMED,hba1c
-1049321000000100,Haemoglobin A1c level (monitoring ranges) - International Federation of Clinical Chemistry and Laboratory Medicine standardised (observable entity),SNOMED,hba1c
-1107481000000106,Substance concentration of haemoglobin A1c in blood (observable entity),SNOMED,hba1c
-,,,
+﻿code,code_description,terminology,group,cluster_id,pcd_refset_id
+1971000237103,Substance concentration of haemoglobin A1c diagnostic reference range in blood (observable entity),SNOMED,hba1c,IFCCHBAM_COD,999003251000230000
+6181000237109,Substance concentration of haemoglobin A1c monitoring range in blood (observable entity),SNOMED,hba1c,IFCCHBAM_COD,999003251000230000
+999791000000106,Haemoglobin A1c level - International Federation of Clinical Chemistry and Laboratory Medicine standardised (observable entity),SNOMED,hba1c,IFCCHBAM_COD,999003251000230000
+1049301000000100,Haemoglobin A1c level (diagnostic reference range) - International Federation of Clinical Chemistry and Laboratory Medicine standardised (observable entity),SNOMED,hba1c,IFCCHBAM_COD,999003251000230000
+1049321000000100,Haemoglobin A1c level (monitoring ranges) - International Federation of Clinical Chemistry and Laboratory Medicine standardised (observable entity),SNOMED,hba1c,IFCCHBAM_COD,999003251000230000
+1107481000000106,Substance concentration of haemoglobin A1c in blood (observable entity),SNOMED,hba1c,IFCCHBAM_COD,999003251000230000
