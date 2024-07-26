@@ -1,1 +1,1 @@
-![DDSC Algorithm](flowcharts/DDSC_Algorithm.png)
+![DDSC Algorithm](flowchart/DDSC_Algorithm.png)
