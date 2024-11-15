@@ -1,0 +1,433 @@
+---
+title: "OpenSafely Algorithm"
+output: html_document
+date: '2024-04-15'
+---
+
+This export shows the cohort size at each stage of the OpenSafely Diabetes algorithm
+
+```{r, setup, warning=FALSE, error=FALSE, message=FALSE,eval=TRUE, echo=FALSE}
+
+proj = "os"
+algorithm_timestamp = "2024_07"
+
+#libraries
+library(odbc)
+library(DBI)
+library(tidyverse)
+library(glue)
+library(kableExtra)
+library(lubridate)
+
+#connect
+con <- DBI::dbConnect(odbc::odbc(), dsn = "databricks", HTTPPath = "sql/protocolv1/o/847064027862604/0622-162121-dts9kxvy", 
+    PWD = ""
+      #rstudioapi::askForPassword("Please enter Databricks PAT")
+    )
+
+#parameters
+dsa = "dsa_391419_j3w9t_collab"
+
+select_all = glue("SELECT * FROM ",dsa,".")
+select_all_proj = glue("SELECT * FROM ",dsa,".","ddsc","_")
+
+
+```
+
+
+```{r, data, warning=FALSE, error=FALSE, message=FALSE, eval=FALSE, echo=FALSE}
+
+cohort <- dbGetQuery(con,sprintf(glue(select_all_proj,"cohort_",algorithm_timestamp)))
+
+
+cpc_df <- dbGetQuery(con,sprintf(glue(select_all,"ddsc_cur_cpc_",algorithm_timestamp)))
+
+gest <- dbGetQuery(con,sprintf(glue(select_all,"ddsc_cur_gest_",algorithm_timestamp))) %>% mutate(GEST_EVER=1)
+
+cohort = cohort %>%
+  left_join(cpc_df) %>%
+  mutate(cpc_codes_last_years_sum = count
+         
+         ) %>%
+  
+  mutate(cpc_5_codes_last_years=ifelse(cpc_codes_last_years_sum>=5,1,0)) %>%
+  mutate(ETHNICITY_DETAILED = ethnicity_18_group)
+
+cohort = cohort %>%
+filter(flag_diabetes_cohort == 1) %>%
+full_join(gest)
+
+
+
+cohort = cohort %>%
+  mutate(cpc_5_codes_last_years = ifelse(is.na(cpc_5_codes_last_years), 0, cpc_5_codes_last_years)) %>%
+  mutate(GEST_EVER = ifelse(is.na(GEST_EVER), 0, GEST_EVER))
+
+```
+
+
+
+
+# Algorithm
+
+
+```{r, algo, warning=FALSE, error=FALSE, message=FALSE, eval=FALSE, echo=FALSE}
+
+
+
+# Step 1. Any gestational diabetes codes? 
+cohort = cohort %>%
+  mutate(step_1 = ifelse(GEST_EVER==1, "Yes", "No"))
+
+
+# Step 1a. Any T1/ T2 diagnostic codes present?
+cohort = cohort %>%
+  mutate(step_1a = ifelse(step_1 == "Yes" & (TYPE1_EVER==1 | TYPE2_EVER==1), "Yes",
+                   ifelse(step_1 == "Yes" & (TYPE1_EVER==0 & TYPE2_EVER==0), "No",
+                          NA)))
+    
+# Step 2. Any Insulin prescriptions?
+cohort = cohort %>%
+    mutate(step_2 = ifelse((step_1 == "No" | step_1a == "Yes") & INSULIN_EVER==1, "Yes",
+                    ifelse((step_1 == "No" | step_1a == "Yes") & INSULIN_EVER==0, "No", 
+                           NA)))
+
+# Step 2a. Any Metformin/Antidiabetic prescriptions?
+cohort = cohort %>%
+    mutate(step_2a = ifelse((step_2 == "Yes") & (ANTIDIABETIC_EVER==1 | METFORMIN_EVER==1), "Yes",
+                     ifelse((step_2 == "Yes") & (ANTIDIABETIC_EVER==0 & METFORMIN_EVER==0), "No", 
+                           NA)))
+
+  
+# Step 3. Type 1 code in the absence of type 2 code?
+cohort = cohort %>%
+    mutate(step_3 = ifelse((step_2=="No" | step_2a=="Yes") & (TYPE1_EVER==1 & TYPE2_EVER==0), "Yes", 
+                    ifelse((step_2=="No" | step_2a=="Yes") & !(TYPE1_EVER==1 & TYPE2_EVER==0), "No",
+                           NA)))
+    
+# Step 4. Type 2 code in the absence of type 1 code?
+cohort = cohort %>%
+    mutate(step_4 = ifelse((step_3=="No") & (TYPE1_EVER==0 & TYPE2_EVER==1), "Yes", 
+                    ifelse((step_3=="No") & !(TYPE1_EVER==0 & TYPE2_EVER==1), "No",
+                           NA)))
+
+
+# Step 5. Both Type 1 and Type 2 codes?
+cohort = cohort %>%
+    mutate(step_5 = ifelse((step_4=="No") & (TYPE1_EVER==1 & TYPE2_EVER==1), "Yes", 
+                    ifelse((step_4=="No") & !(TYPE1_EVER==1 & TYPE2_EVER==1), "No",
+                           NA)))
+
+
+# Step 5a. Number of Type 2 codes > Number of Type 1 codes?
+cohort = cohort %>%
+    mutate(step_5a = ifelse((step_5=="Yes") & (TYPE2_NO > TYPE1_NO), "Yes", 
+                     ifelse((step_5=="Yes") & !(TYPE2_NO > TYPE1_NO), "No",
+                           NA)))
+
+# Step 5b. Number of Type 1 codes > Number of Type 2 codes?
+cohort = cohort %>%
+    mutate(step_5b = ifelse((step_5a=="No") & (TYPE1_NO > TYPE2_NO), "Yes", 
+                     ifelse((step_5a=="No") & !(TYPE1_NO > TYPE2_NO), "No",
+                           NA)))
+
+# Step 5c. Both Type 1 and Type 2 codes?
+cohort = cohort %>%
+    mutate(step_5c = ifelse((step_5b=="No") & (TYPE2_DATE_LAST>TYPE1_DATE_LAST), "Yes", 
+                     ifelse((step_5b=="No") & !(TYPE2_DATE_LAST>TYPE1_DATE_LAST), "No",
+                           NA)))
+
+# Step 6. Any Other codes?
+cohort = cohort %>%
+    mutate(step_6 = ifelse((step_5=="No") & (OTHER_EVER==1 |NOS_EVER==1), "Yes", 
+                    ifelse((step_5=="No") & !(OTHER_EVER==1 |NOS_EVER==1), "No",
+                           NA)))
+
+
+# Step 7. Aged <25yrs (or <20 yrs for SAs and AFCS) at first diagnostic code?
+cohort = cohort %>%
+    mutate(age_at_diagnosis=lubridate::time_length(difftime(min_diabetes_date, DATE_OF_BIRTH), "years"))
+
+# Check no ones age at diagnosis is <0
+cohort %>% filter(age_at_diagnosis<0)
+
+cohort = cohort %>%
+  # South Asians and African Caribbeans
+    mutate(ethnicity_of_interest = ifelse(ETHNICITY_DETAILED%in%c("Bangladeshi","Indian","Pakistani","Caribbean","Any other Black background","African"),1,0)) %>%
+    mutate(age_under_diag=ifelse(
+      (age_at_diagnosis<25 & ethnicity_of_interest==0) | (age_at_diagnosis<20 & ethnicity_of_interest==1),
+      1,0
+    )) %>%
+    mutate(step_7 = ifelse(step_6 == "Yes" & age_under_diag == 1, "Yes",
+                    ifelse(step_6 == "Yes" & age_under_diag == 0, "No",
+                           NA)))
+
+
+# Step 8. Diabetes medication or >5 process of care codes (in last 2 years) or HbA1c>=6.5?
+cohort = cohort %>%
+    mutate(step_8 = ifelse(step_7 == "No" &                          
+                             ((ANTIDIABETIC_EVER==1 | METFORMIN_EVER==1) |    
+                              (HBA1C_HIGH_EVER==1) |
+                              (cpc_5_codes_last_years==1)
+                              ),"Yes",
+                    ifelse(step_7 == "No" &                          
+                             !((ANTIDIABETIC_EVER==1 | METFORMIN_EVER==1) |    
+                              (HBA1C_HIGH_EVER==1) |
+                              (cpc_5_codes_last_years==1)
+                              ),"No",
+                           NA)))
+    
+    
+
+
+
+
+  
+  
+```
+
+
+# Numbers at each Step
+
+
+```{r, check, warning=FALSE, error=FALSE, message=FALSE, eval=FALSE, echo=FALSE}
+
+# Start Number
+cohort %>% nrow()
+
+# Step 1
+cohort %>% select(step_1) %>% filter(is.na(step_1)) %>% nrow() == 0 
+cohort %>% group_by(step_1) %>% count()
+
+# Step 1a
+cohort %>% select(step_1a,step_1) %>% filter(step_1=="Yes") %>% filter(is.na(step_1a)) %>% nrow() == 0 
+cohort %>% select(step_1a,step_1) %>% filter(step_1=="No") %>% filter(is.na(step_1a)) %>% nrow() == 0 
+
+cohort %>% filter(step_1=="Yes") %>% group_by(step_1a) %>% count()
+
+# Step 2
+cohort %>% filter(step_1=="No" | step_1a=="Yes") %>% filter(is.na(step_2)) %>% nrow() == 0
+cohort %>% filter(step_1=="No" | step_1a=="Yes") %>% nrow()
+cohort %>% filter(step_1=="No" | step_1a=="Yes") %>% group_by(step_2) %>% count()
+
+# Step 2a
+cohort %>% filter(step_2=="Yes") %>% filter(is.na(step_2a)) %>% nrow() == 0
+cohort %>% filter(step_2=="Yes") %>% group_by(step_2a) %>% count()
+
+# Step 3
+cohort %>% filter(step_2=="No" | step_2a=="Yes") %>% filter(is.na(step_3)) %>% nrow() == 0
+cohort %>% filter(step_2=="No" | step_2a=="Yes") %>% nrow()
+cohort %>% filter(step_2=="No" | step_2a=="Yes") %>% group_by(step_3) %>% count()
+
+# Step 4
+cohort %>% filter(step_3=="No") %>% filter(is.na(step_4)) %>% nrow() == 0
+cohort %>% filter(step_3=="No") %>% nrow()
+cohort %>% filter(step_3=="No") %>% group_by(step_4) %>% count()
+
+# Step 5
+cohort %>% filter(step_4=="No") %>% filter(is.na(step_5)) %>% nrow() == 0
+cohort %>% filter(step_4=="No") %>% nrow()
+cohort %>% filter(step_4=="No") %>% group_by(step_5) %>% count()
+
+# Step 5a
+cohort %>% filter(step_5=="Yes") %>% filter(is.na(step_5a)) %>% nrow() == 0
+cohort %>% filter(step_5=="Yes") %>% nrow()
+cohort %>% filter(step_5=="Yes") %>% group_by(step_5a) %>% count()
+
+# Step 5b
+cohort %>% filter(step_5a=="No") %>% filter(is.na(step_5b)) %>% nrow() == 0
+cohort %>% filter(step_5a=="No") %>% nrow()
+cohort %>% filter(step_5a=="No") %>% group_by(step_5b) %>% count()
+
+# Step 5c
+cohort %>% filter(step_5b=="No") %>% filter(is.na(step_5c)) %>% nrow() == 0
+cohort %>% filter(step_5b=="No") %>% nrow()
+cohort %>% filter(step_5b=="No") %>% group_by(step_5c) %>% count()
+
+
+# Step 6
+cohort %>% filter(step_5=="No") %>% filter(is.na(step_6)) %>% nrow() == 0
+cohort %>% filter(step_5=="No") %>% nrow()
+cohort %>% filter(step_5=="No") %>% group_by(step_6) %>% count()
+
+# Step 7
+cohort %>% filter(step_6=="Yes") %>% filter(is.na(step_7)) %>% nrow() == 0
+cohort %>% filter(step_6=="Yes") %>% nrow()
+cohort %>% filter(step_6=="Yes") %>% group_by(step_7) %>% count()
+
+# Step 8
+cohort %>% filter(step_7=="No") %>% filter(is.na(step_8)) %>% nrow() == 0
+cohort %>% filter(step_7=="No") %>% nrow()
+cohort %>% filter(step_7=="No") %>% group_by(step_8) %>% count()
+
+```
+
+
+## Steps for Export
+
+```{r, steps_export, warning=FALSE, error=FALSE, message=FALSE, eval=FALSE, echo=FALSE}
+
+
+
+gathered_data = cohort %>%
+  select(PERSON_ID,
+         starts_with("step")) %>%
+  gather(key = "col_name", value = "response", -PERSON_ID)
+
+steps_data = gathered_data %>%
+  group_by(col_name, response) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = response, values_from = count, values_fill = 0) %>%
+  select(-"NA") %>%
+  mutate(No_PCT=round(No/(Yes+No)*100,2)) %>%
+  mutate(Yes_PCT=round(Yes/(Yes+No)*100,2)) %>%
+  mutate(No = case_when(
+     No < 10 ~ 10,
+     TRUE ~ round(No / 5) * 5
+     )) %>%
+  mutate(Yes = case_when(
+     Yes < 10 ~ 10,
+     TRUE ~ round(Yes / 5) * 5
+     )) 
+
+
+steps_data %>% write_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_steps_",algorithm_timestamp,".csv"))
+
+
+```
+
+
+```{r, steps_export_print, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE}
+
+steps_data = read_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_steps_",algorithm_timestamp,".csv"))
+steps_data
+
+```
+
+# Results
+
+```{r, results_work, warning=FALSE, error=FALSE, message=FALSE, eval=FALSE, echo=FALSE}
+
+# Create Diabetes Variable
+cohort = cohort %>%
+    mutate(
+      
+      out_diabetes = 
+        
+        ifelse((step_1=="Yes"&step_1a=="No") | (step_1=="Yes"&is.na(step_1a)) ,
+               "Gestational",
+        
+               
+               
+        ifelse(
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) &
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "No" & step_6 == "Yes" & step_7 == "No" & step_8 == "No") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "No" & step_4 == "No" & step_5 == "No" & step_6 == "No"),
+          "Unlikely",
+          
+        ifelse(
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "No" & step_4 == "Yes") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "Yes" & step_5a == "Yes") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) &
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "Yes" & step_5a == "No" & 
+            step_5b == "No" & step_5c == "Yes"),
+          
+          "Type 2",
+          
+        ifelse(
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes"))&
+             step_2=="Yes"&step_2a=="No") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "Yes" & step_5a == "No" & step_5b == "Yes") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "Yes") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) &
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "No" & step_6 == "Yes" & 
+            step_7 == "Yes") |
+          
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) &
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "Yes" & step_5a == "No" & step_5b == "No" & step_5c == "No") |
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) &
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "No" & step_6 == "Yes" & step_7 == "Yes"),
+          
+          "Type 1",
+
+        ifelse(
+            
+          ((step_1 == "No" | (step_1=="Yes"&step_1a=="Yes")) & 
+           (step_2 == "No" | (step_2=="Yes"&step_2a=="Yes")) & 
+            step_3 == "No" & step_4 == "No" & 
+            step_5 == "No" & step_6 == "Yes" &
+            step_7 == "No" & step_8 == "Yes"),
+          
+          "Other",
+          NA
+            
+        )
+            
+            
+        )))))
+
+
+
+
+results = cohort %>%
+  group_by(out_diabetes) %>% count() %>%
+  ungroup()
+
+results %>% write_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_results_",algorithm_timestamp,".csv"))
+
+
+cohort
+
+
+```
+
+
+```{r, results, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE}
+
+results = read_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_results_",algorithm_timestamp,".csv"))
+        
+results %>%
+  ungroup() %>%
+  mutate(n_pct=round(n/sum(n)*100,2)) %>%
+  mutate(tmp=ifelse(out_diabetes%in%c("Other"),NA,n)) %>%
+  mutate(n_pct_of_diabetes_cohort_os = round(tmp/sum(tmp,na.rm=TRUE)*100,2)) %>%
+  select(-tmp) %>%
+  mutate(n = case_when(
+     n < 10 ~ 10,
+     TRUE ~ round(n / 5) * 5
+     ))
+
+
+
+
+```

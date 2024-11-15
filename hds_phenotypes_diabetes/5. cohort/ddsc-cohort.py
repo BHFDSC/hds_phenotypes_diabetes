@@ -213,6 +213,14 @@ cohort = (
     .withColumn("last_observable_date",f.when(f.col("CENSOR_END").isNull(),
                                               f.col("last_observable_date")).otherwise(f.col("CENSOR_END"))
     )
+    # in cases where CENSOR_END > last_observable_date then last_observable_date is used
+    .withColumn("last_observable_date",f.when(f.to_date(f.lit(last_observable_date), "yyyy-MM-dd") > f.col("CENSOR_END"),
+                                              f.to_date(f.lit(last_observable_date), "yyyy-MM-dd")).otherwise(f.col("last_observable_date"))
+    )
+    # when study_end_date comes before LOS/DOD this is used
+    .withColumn("last_observable_date",f.when(f.to_date(f.lit(study_end_date), "yyyy-MM-dd") < f.col("last_observable_date"),
+                                              f.to_date(f.lit(study_end_date), "yyyy-MM-dd")).otherwise(f.col("last_observable_date"))
+    )
 
     .withColumn("last_insulin_to_last_observable_date_lt", 
                 f. months_between(f.col("last_observable_date"),f.col("INSULIN_DATE_LAST")))
@@ -252,4 +260,4 @@ cohort = (
 
 # COMMAND ----------
 
-save_table(df=cohort, out_name=f'{proj}_cohort_{algorithm_timestamp}', save_previous=False)
+save_table(df=cohort, out_name=f'{proj}_ddsc_cohort_{algorithm_timestamp}', save_previous=False)

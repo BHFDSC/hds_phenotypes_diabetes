@@ -1,0 +1,681 @@
+---
+title: "DDSC Algorithm"
+author: "Fionna Chalmers"
+date: '2024-07-26'
+output: html_document
+---
+
+
+```{r, setup, warning=FALSE, error=FALSE, message=FALSE,eval=TRUE, echo=FALSE, results = 'hide'}
+
+proj = "ddsc"
+algorithm_timestamp = "2024_01"
+
+#libraries
+library(odbc)
+library(DBI)
+library(tidyverse)
+library(glue)
+library(kableExtra)
+library(lubridate)
+
+
+#connect
+con <- DBI::dbConnect(odbc::odbc(), dsn = "databricks", HTTPPath = "sql/protocolv1/o/847064027862604/0622-162121-dts9kxvy", 
+    PWD = ""
+      #rstudioapi::askForPassword("Please enter Databricks PAT")
+    )
+
+#parameters
+dsa = "dsa_391419_j3w9t_collab"
+select_all = glue("SELECT * FROM ",dsa,".")
+select_all_proj = glue("SELECT * FROM ",dsa,".",proj,"_")
+
+
+```
+
+
+```{r, data, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+cohort <- dbGetQuery(con,sprintf(glue(select_all_proj,"cohort_",algorithm_timestamp)))
+
+cohort = cohort %>%
+  mutate(ANTIDIABETIC_METFORMIN_EVER = if_else(ANTIDIABETIC_EVER==1 | METFORMIN_EVER==1, 1, 0)) %>%
+  mutate(at_least_two = rowSums(select(., INSULIN_EVER, HBA1C_HIGH_EVER, ANTIDIABETIC_METFORMIN_EVER)) >= 2)
+
+
+```
+
+
+# Algorithm
+
+
+```{r, algo, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+
+
+# Step 1. Any Diabetes Other codes 
+cohort = cohort %>%
+  mutate(step_1 = ifelse(OTHER_EVER==1, "Yes", "No"))
+
+
+# Step 2. Prescribing data coverage available
+cohort = cohort %>%
+  mutate(step_2 = ifelse(step_1 == "No" & (prescribing_coverage_available==1), "Yes",
+                  ifelse(step_1 == "No" & !(prescribing_coverage_available==1), "No",
+                          NA)))
+    
+# Step 3. Not currently on Insulin AND >3 years from diagnosis to last observable date
+cohort = cohort %>%
+    mutate(step_3 = ifelse(step_2 == "Yes" & (not_currently_on_insulin==1 & more_than_3years_date_diagnosis_to_last_observable_date==1), "Yes",
+                    ifelse(step_2 == "Yes" & !(not_currently_on_insulin==1 & more_than_3years_date_diagnosis_to_last_observable_date==1), "No", 
+                           NA)))
+
+# Step 3.1 Any Diabetes Type 2 codes
+cohort = cohort %>%
+    mutate(step_3_1 = ifelse(step_3 == "Yes" & (TYPE2_EVER==1), "Yes",
+                      ifelse(step_3 == "Yes" & !(TYPE2_EVER==1), "No", 
+                           NA)))
+
+  
+# Step 4. Diabetes Type 1 codes and NO Diabetes Type 2 codes
+cohort = cohort %>%
+    mutate(step_4 = ifelse((step_2=="No" | step_3=="No") & (TYPE1_EVER==1 & TYPE2_EVER==0), "Yes", 
+                    ifelse((step_2=="No" | step_3=="No") & !(TYPE1_EVER==1 & TYPE2_EVER==0), "No",
+                           NA)))
+    
+# Step 5. Diabetes Type 2 codes and NO Diabetes Type 1 codes
+cohort = cohort %>%
+    mutate(step_5 = ifelse(step_4=="No" & (TYPE1_EVER==0 & TYPE2_EVER==1), "Yes", 
+                    ifelse(step_4=="No" & !(TYPE1_EVER==0 & TYPE2_EVER==1), "No",
+                           NA)))
+
+
+# Step 6. Diabetes Type 1 codes and Diabetes Type 2 codes
+cohort = cohort %>%
+    mutate(step_6 = ifelse(step_5=="No" & (TYPE1_EVER==1 & TYPE2_EVER==1), "Yes", 
+                    ifelse(step_5=="No" & !(TYPE1_EVER==1 & TYPE2_EVER==1), "No",
+                           NA)))
+
+
+# Step 6.1 Diabetes Type 1 code more recent than Diabetes Type 2 code
+cohort = cohort %>%
+    mutate(step_6_1 = ifelse((step_6=="Yes") & (type1_more_recent_type2==1), "Yes", 
+                      ifelse((step_6=="Yes") & !(type1_more_recent_type2==1), "No",
+                           NA)))
+
+# Step 7. Diagnosed age <35 years and on Insulin within 1 year of diagnosis
+cohort = cohort %>%
+    mutate(step_7 = ifelse(step_6=="No" & (age_at_diagnosis<35 & on_insulin_within_1year==1), "Yes", 
+                    ifelse(step_6=="No" & !(age_at_diagnosis<35 & on_insulin_within_1year==1), "No",
+                           NA)))
+
+# Step 8. Any Diabetes NOS codes
+cohort = cohort %>%
+    mutate(step_8 = ifelse((step_7=="No" | step_3_1=="No") & (NOS_EVER==1), "Yes", 
+                    ifelse((step_7=="No" | step_3_1=="No") & !(NOS_EVER==1), "No",
+                           NA)))
+
+# Step 9. 2 of the following: Insulin, high Hba1c, Antidiabetic/Metformin
+cohort = cohort %>%
+    mutate(step_9 = ifelse(step_8=="No" & (at_least_two), "Yes", 
+                    ifelse(step_8=="No" & !(at_least_two), "No",
+                           NA)))
+
+
+
+
+  
+```
+
+
+# Steps for Export
+
+```{r, steps_export, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+
+
+gathered_data = cohort %>%
+  select(PERSON_ID,
+         starts_with("step")) %>%
+  gather(key = "col_name", value = "response", -PERSON_ID)
+
+steps_data = gathered_data %>%
+  group_by(col_name, response) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = response, values_from = count, values_fill = 0) %>%
+  select(-"NA") %>%
+  mutate(No_PCT=round(No/(Yes+No)*100,2)) %>%
+  mutate(Yes_PCT=round(Yes/(Yes+No)*100,2)) %>%
+  mutate(No = case_when(
+     No < 10 ~ 10,
+     TRUE ~ round(No / 5) * 5
+     )) %>%
+  mutate(Yes = case_when(
+     Yes < 10 ~ 10,
+     TRUE ~ round(Yes / 5) * 5
+     )) 
+
+
+steps_data %>% write_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_steps_",algorithm_timestamp,".csv"))
+
+
+```
+
+
+```{r, steps_export_print, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+steps_data = read_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_steps_",algorithm_timestamp,".csv"))
+steps_data
+
+```
+
+
+
+# Results
+
+```{r, results_work, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+# Create Diabetes Variable
+cohort = cohort %>%
+    mutate(
+      
+      out_diabetes = 
+        
+        # Other ----------------------------------------------------------------
+        
+        ifelse(
+          
+          step_1=="Yes",
+               
+          "Other",
+               
+        # Type 1 ---------------------------------------------------------------
+        ifelse(
+          
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="Yes") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="Yes") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="Yes" & step_6_1=="Yes") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="No" & step_6=="Yes" & step_6_1=="Yes") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="Yes") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="Yes"),
+          
+          "Type 1",
+          
+        # Type 2 ---------------------------------------------------------------
+        ifelse(
+          
+          (step_1=="No" & step_2=="Yes" & step_3=="Yes" & step_3_1=="Yes") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="Yes") | 
+          
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="Yes") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="No" & step_6=="Yes" & step_6_1=="No") |
+
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="Yes" & step_6_1=="No") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="Yes" & step_6_1=="No"),
+          
+          
+          "Type 2",
+          
+        # NOS ------------------------------------------------------------------
+        ifelse(
+          
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="No" & step_8=="Yes") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="No" & step_8=="No" & step_9=="Yes") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="Yes" & step_3_1=="No" & step_8=="Yes") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="Yes" & step_3_1=="No" & step_8=="No" & step_9=="Yes") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="No" & step_8=="Yes") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="No" & step_8=="No" & step_9=="Yes"),
+            
+          
+          "NOS",
+
+        # Unlikely -------------------------------------------------------------
+        ifelse(
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="No" & step_8=="No" & step_9=="No") |
+            
+          (step_1=="No" & step_2=="Yes" & step_3=="Yes" & step_3_1=="No" & step_8=="No" & step_9=="No") |
+            
+          (step_1=="No" & step_2=="No" & step_4=="No" & step_5=="No" & step_6=="No" & step_7=="No" & step_8=="No" & step_9=="No"),
+          
+          "Unlikely",
+          
+          
+          NA
+            
+        )
+            
+            
+        ))))) %>%
+  
+  ungroup()
+
+
+results = cohort %>%
+  group_by(out_diabetes) %>% count() %>%
+  ungroup()
+
+results %>% write_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_results_",algorithm_timestamp,".csv"))
+
+type1_to_type2_other_nos_ratio = pull(select(filter(results,out_diabetes=="Type 1"),n)) / 
+  (pull(select(filter(results,out_diabetes=="Type 1"),n)) + pull(select(filter(results,out_diabetes=="Type 2"),n)) + pull(select(filter(results,out_diabetes=="Other"),n)) + pull(select(filter(results,out_diabetes=="NOS"),n)))*100
+
+
+
+type1_to_type2_other_ratio = pull(select(filter(results,out_diabetes=="Type 1"),n)) / 
+  (pull(select(filter(results,out_diabetes=="Type 1"),n)) + pull(select(filter(results,out_diabetes=="Type 2"),n)) + pull(select(filter(results,out_diabetes=="Other"),n)))*100
+
+
+```
+
+
+```{r, results, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+        
+results_with_sdc = results %>%
+  ungroup() %>%
+  mutate(n_pct=round(n/sum(n)*100,2)) %>%
+  mutate(tmp=ifelse(out_diabetes%in%c("Unlikely"),NA,n)) %>%
+  mutate(n_pct_of_diabetes_cohort = round(tmp/sum(tmp,na.rm=TRUE)*100,2)) %>%
+  select(-tmp) %>%
+  mutate(n = case_when(
+     n < 10 ~ 10,
+     TRUE ~ round(n / 5) * 5
+     ))
+
+
+results_with_sdc %>% write_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_results_with_sdc_",algorithm_timestamp,".csv"))
+
+
+```
+
+```{r, results_print, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+
+results_with_sdc = read_csv(paste0(dirname(getwd()),"/results/",proj,"_algorithm_results_with_sdc_",algorithm_timestamp,".csv"))
+results_with_sdc
+
+```
+
+
+# Table 1
+
+```{r, table1, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE, results = 'hide'}
+
+library(table1)
+
+my.render.cont <- function(x) {
+    with(stats.default(x), 
+         c("",
+           
+          "Mean (SD)" = sprintf("%s (%s)",
+                                round_pad(MEAN, 1),
+                                round_pad(SD, 1)),
+         
+          "Median (Min, Max)" = sprintf("%s (%s, %s)",
+                                       round_pad(MEDIAN, 1), 
+                                       round_pad(MIN, 1), 
+                                       round_pad(MAX, 1)))
+    )
+}
+
+
+my.render.cat <- function(x) {
+  c("", sapply(stats.default(x),
+    function(y) with(y, sprintf(
+      "%s (%.1f%%)",
+      formatC(if(FREQ > 10) { round(FREQ / 5) * 5 } else { 10 }, 
+              format = "f", big.mark = ",", digits = 0),
+      PCT
+    ))
+  ))
+}
+
+
+
+# my.render.strat = function(label, n, ...) {
+#   fg <- unlist(n)
+#   result <- ifelse(is.na(fg),
+#                    "P-value",
+#                    sprintf("<span class='stratlabel'>%s<br><span class='stratn'>(N=%s)</span></span>",
+#           label, prettyNum((round(as.numeric(n) / 5) * 5), big.mark=",")))
+#   return(result)
+# }
+
+
+
+
+
+render.missing <- function(x) {
+  # Calculate the number of missing values
+  n_missing <- sum(is.na(x))
+  
+  # Calculate the percentage of missing values
+  percent_missing <- (n_missing / length(x)) * 100
+  
+  # Apply the custom rounding logic to the missing count
+  if (n_missing < 10) {
+    n_missing_adjusted <- 10
+  } else {
+    n_missing_adjusted <- round(n_missing / 5) * 5
+  }
+  
+  # Format the adjusted missing count with commas
+  n_missing_formatted <- formatC(n_missing_adjusted, format = "f", big.mark = ",", digits = 0)
+  
+  # Combine the formatted missing count and the percentage
+  result <- paste0(n_missing_formatted, " (", round(percent_missing, 1), "%)")
+  
+  # Return the result
+  return(result)
+}
+
+
+
+cohort_edit = cohort%>%
+        mutate(BMI_OBESE_OVERWEIGHT_EVER=as.character(BMI_OBESE_OVERWEIGHT_EVER)) %>%
+        mutate(BMI_OBESE_EVER=as.character(BMI_OBESE_EVER)) %>%
+        mutate(duration_of_diabetes = as.numeric((last_observable_date - date_of_diagnosis)/365.25)) %>%
+        mutate(INSULIN_EVER=as.character(INSULIN_EVER)) %>%
+        mutate(ANTIDIABETIC_METFORMIN_EVER=as.character(ANTIDIABETIC_METFORMIN_EVER)) %>%
+        mutate(currently_on_insulin=as.character(currently_on_insulin)) %>%
+        mutate(more_than_3years_date_diagnosis_to_last_observable_date=as.character(more_than_3years_date_diagnosis_to_last_observable_date)) %>%
+        mutate(
+        SEX = case_when(
+        SEX < "M" ~ "Male",
+        SEX >= "F" ~ "Female",
+        SEX >= "I" ~ "Indeterminate",
+        SEX >= "Unknown" ~ "Unknown",
+    )) %>%
+        mutate(SEX=factor(SEX,levels=c("Female","Male","Indeterminate","Unknown"))) %>%
+        mutate(ETHNICITY=factor(ETHNICITY,levels=c("Asian or Asian British",
+                                       "Black, Black British, Caribbean or African","Mixed or multiple ethnic groups",
+                                       "Other ethnic group","White","Unknown"))) %>%
+        mutate(BMI_DATE_DIAGNOSIS_CATEGORY=factor(BMI_DATE_DIAGNOSIS_CATEGORY,levels=c("Underweight","Normal","Overweight","Obese","Unknown")))
+
+
+label(cohort_edit$age_at_diagnosis) <- "Age at diagnosis"
+units(cohort_edit$age_at_diagnosis) <- "years"
+
+label(cohort_edit$SEX) <- "Sex"
+
+label(cohort_edit$ETHNICITY) <- "Ethnicity"
+
+label(cohort_edit$BMI_DATE_DIAGNOSIS_MARKER) <- "BMI Marker closest to date of diagnosis"
+label(cohort_edit$BMI_DATE_DIAGNOSIS_CATEGORY) <- "BMI Category closest to date of diagnosis"
+
+label(cohort_edit$BMI_OBESE_OVERWEIGHT_EVER) <- "BMI of at least Overweight Ever"
+label(cohort_edit$BMI_OBESE_EVER) <- "BMI of Obese Ever"
+
+label(cohort_edit$duration_of_diabetes) <- "Duration of Diabetes"
+units(cohort_edit$duration_of_diabetes) <- "years"
+
+label(cohort_edit$more_than_3years_date_diagnosis_to_last_observable_date) <- "More than 3 years from diagnosis"
+
+label(cohort_edit$INSULIN_EVER) <- "Prescribed Insulin Ever"
+label(cohort_edit$currently_on_insulin) <- "Currently on Insulin"
+
+label(cohort_edit$ANTIDIABETIC_METFORMIN_EVER) <- "Prescribed Antidiabetic/Metformin Ever"
+
+label(cohort_edit$type1_type2_ratio) <- "Type 1 to Type 2 codes ratio"
+
+label(cohort_edit$diagnosis_to_insulin_lt) <- "Diagnosis to Insulin Lead Time"
+
+
+```
+
+
+```{r, table1_out_diabetes, warning=FALSE, error=FALSE, message=FALSE, eval=TRUE, echo=FALSE}
+
+
+ddsc_table1_out_diabetes = table1(~ age_at_diagnosis + 
+         SEX + 
+         ETHNICITY + 
+         BMI_DATE_DIAGNOSIS_MARKER + 
+         BMI_DATE_DIAGNOSIS_CATEGORY + 
+         BMI_OBESE_OVERWEIGHT_EVER + 
+         BMI_OBESE_EVER + 
+         duration_of_diabetes + 
+         more_than_3years_date_diagnosis_to_last_observable_date + 
+         INSULIN_EVER + 
+         currently_on_insulin + 
+         diagnosis_to_insulin_lt + 
+         ANTIDIABETIC_METFORMIN_EVER + 
+         type1_type2_ratio | (out_diabetes), 
+       
+data=(cohort_edit),
+render.categorical=my.render.cat,
+render.strat = my.render.strat,
+render.continuous=my.render.cont,
+render.missing=render.missing
+) 
+
+
+
+
+ddsc_table1_out_diabetes %>% as.data.frame() %>%
+  write_csv(paste0(dirname(getwd()),"/results/",proj,"_table1_out_diabetes_",algorithm_timestamp,".csv"))
+  
+
+
+```
+
+
+```{r}
+
+ 
+cohort_edit_steps = cohort_edit %>% mutate(steps="step1") %>%
+  
+  rbind(
+  
+cohort_edit %>% filter(step_1=="No") %>% mutate(steps="step2")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_2=="Yes") %>% mutate(steps="step3")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_3=="Yes") %>% mutate(steps="step3_1")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_3=="No" | step_2=="No") %>% mutate(steps="step_4")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_4=="No") %>% mutate(steps="step_5")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_5=="No") %>% mutate(steps="step_6")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_6=="Yes") %>% mutate(steps="step_6_1")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_6=="No") %>% mutate(steps="step_7")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_7=="No" | step_3_1=="No") %>% mutate(steps="step_8")
+
+) %>% rbind(
+
+cohort_edit %>% filter(step_8=="No") %>% mutate(steps="step_9")
+
+)
+
+
+
+ddsc_table1_out_steps = table1(~ age_at_diagnosis + 
+         SEX + 
+         ETHNICITY + 
+         BMI_DATE_DIAGNOSIS_MARKER + 
+         BMI_DATE_DIAGNOSIS_CATEGORY + 
+         BMI_OBESE_OVERWEIGHT_EVER + 
+         BMI_OBESE_EVER + 
+         duration_of_diabetes + 
+         more_than_3years_date_diagnosis_to_last_observable_date + 
+         INSULIN_EVER + 
+         currently_on_insulin + 
+         diagnosis_to_insulin_lt + 
+         ANTIDIABETIC_METFORMIN_EVER + 
+         type1_type2_ratio | (steps), 
+       
+data=(cohort_edit_steps),
+render.categorical=my.render.cat,
+render.strat = my.render.strat,
+render.continuous=my.render.cont,
+render.missing=render.missing
+) 
+
+
+
+
+ddsc_table1_out_steps %>% as.data.frame() %>%
+  write_csv(paste0(dirname(getwd()),"/results/",proj,"_table1_out_steps_",algorithm_timestamp,".csv"))
+
+```
+
+
+
+```{r}
+
+ 
+cohort_edit_steps_detail = cohort_edit %>% filter(step_1=="No") %>%mutate(steps_detail="step1_no") %>%
+  
+  rbind(
+  
+cohort_edit %>% filter(step_1=="Yes") %>%mutate(steps_detail="step1_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_2=="No") %>%mutate(steps_detail="step2_no")
+
+) %>% rbind(
+  
+cohort_edit %>% filter(step_2=="Yes") %>%mutate(steps_detail="step2_yes")
+
+) %>% rbind(
+  
+cohort_edit %>% filter(step_3=="No") %>%mutate(steps_detail="step3_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_3=="Yes") %>%mutate(steps_detail="step3_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_3_1=="No") %>%mutate(steps_detail="step3_1_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_3_1=="Yes") %>%mutate(steps_detail="step3_1_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_4=="No") %>%mutate(steps_detail="step4_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_4=="Yes") %>%mutate(steps_detail="step4_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_5=="No") %>%mutate(steps_detail="step5_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_5=="Yes") %>%mutate(steps_detail="step5_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_6=="No") %>%mutate(steps_detail="step6_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_6=="Yes") %>%mutate(steps_detail="step6_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_6_1=="No") %>%mutate(steps_detail="step6_1_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_6_1=="Yes") %>%mutate(steps_detail="step6_1_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_7=="No") %>%mutate(steps_detail="step7_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_7=="Yes") %>%mutate(steps_detail="step7_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_8=="No") %>%mutate(steps_detail="step8_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_8=="Yes") %>%mutate(steps_detail="step8_yes")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_9=="No") %>%mutate(steps_detail="step9_no")
+
+) %>%  rbind(
+  
+cohort_edit %>% filter(step_9=="Yes") %>%mutate(steps_detail="step9_yes")
+
+)
+
+
+
+ddsc_table1_out_steps_detail = table1(~ age_at_diagnosis + 
+         SEX + 
+         ETHNICITY + 
+         BMI_DATE_DIAGNOSIS_MARKER + 
+         BMI_DATE_DIAGNOSIS_CATEGORY + 
+         BMI_OBESE_OVERWEIGHT_EVER + 
+         BMI_OBESE_EVER + 
+         duration_of_diabetes + 
+         more_than_3years_date_diagnosis_to_last_observable_date + 
+         INSULIN_EVER + 
+         currently_on_insulin + 
+         diagnosis_to_insulin_lt + 
+         ANTIDIABETIC_METFORMIN_EVER + 
+         type1_type2_ratio | (steps_detail), 
+       
+data=(cohort_edit_steps_detail),
+render.categorical=my.render.cat,
+render.strat = my.render.strat,
+render.continuous=my.render.cont,
+render.missing=render.missing
+) 
+
+
+
+
+ddsc_table1_out_steps_detail %>% as.data.frame() %>%
+  write_csv(paste0(dirname(getwd()),"/results/",proj,"_table1_out_steps_detail_",algorithm_timestamp,".csv"))
+
+```

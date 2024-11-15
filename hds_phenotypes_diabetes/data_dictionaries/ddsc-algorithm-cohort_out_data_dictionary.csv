@@ -1,0 +1,15 @@
+﻿Variable,Variable Type,Variable Description,Example
+age_at_diagnosis,Numeric,Person's age as at their date of diagnosis (defined as the date of a person's first diabetes code (of any type) or the first high HbA1c if more than a year before first diabetes code),Difference between date of diagnosis and date of birth (in years)
+date_of_diagnosis,Date,Defined as the date of a person's first diabetes code (of any type) or the first high HbA1c if more than a year before first diabetes code.,Defined as the date of a person's first diabetes code (of any type) or the first high HbA1c if more than a year before first diabetes code.
+step_1,Character,Answer to Step 1 in the Algorithm; Any Diabetes Other codes,Yes or No
+step_2,Character,Answer to Step 2 in the Algorithm; Prescribing data coverage available (Not available if died before prescribing coverage starts),Yes or No or Null (if a person was classified before Step 2)
+step_3,Character,Answer to Step 3 in the Algorithm; Not currently on Insulin (No prescription within the last 6 months prior to last observable date) AND >3 years from diagnosis to last observable date ,Yes or No or Null (if a person was classified before Step 3)
+step_3_1,Character,Answer to Step 3.1 in the Algorithm; Any Diabetes Type 2 codes,Yes or No or Null (if a person was classified before Step 3.1)
+step_4,Character,Answer to Step 4 in the Algorithm; Diabetes Type 1 codes AND NO Diabetes Type 2 codes ,Yes or No or Null (if a person was classified before Step 4)
+step_5,Character,Answer to Step 5 in the Algorithm; Diabetes Type 2 codes AND NO Diabetes Type 1 codes,Yes or No or Null (if a person was classified before Step 5)
+step_6,Character,Answer to Step 6 in the Algorithm; Diabetes Type 1 codes AND Diabetes Type 2 codes,Yes or No or Null (if a person was classified before Step 6)
+step_6_1,Character,Answer to Step 6.1 in the Algorithm; Diabetes Type 1 code more recent than Diabetes Type 2 code ,Yes or No or Null (if a person was classified before Step 6.1)
+step_7,Character,Answer to Step 7 in the Algorithm; Diagnosed age <35 years AND on Insulin within 1 year of diagnosis,Yes or No or Null (if a person was classified before Step 7)
+step_8,Character,Answer to Step 8 in the Algorithm; Any Diabetes NOS codes,Yes or No or Null (if a person was classified before Step 8)
+step_9,Character,"Answer to Step 9 in the Algorithm; >= 2 of the following: Antidiabetic/Metformin medication prescription ever, >= 2 consecutive high HbA1c, Insulin prescribed ever",Yes or No or Null (if a person was classified before Step 9)
+out_diabetes,Character,Diabetes classification as decided by the DDSC Algorithm,Type 1 or Type 2 or NOS or Other or Unlikely
